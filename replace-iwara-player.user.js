@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         替换iwara播放器
-// @namespace    https://github.com/s0urcelab/userscripts/blob/master/replace-iwara-player.user.js
+// @namespace    https://github.com/s0urcelab/userscripts
 // @version      1.0
 // @description  修复iwara播放器加载源错误问题
 // @match        https://www.iwara.tv/video/*

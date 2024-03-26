@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        m-team qBittorrent 快捷下载
-// @namespace   https://github.com/s0urcelab/userscripts/blob/master/mteam-qbit-shortcut.user.js
+// @namespace   https://github.com/s0urcelab/userscripts
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_getValue

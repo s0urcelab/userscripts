@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        移除 Bilibili 链接垃圾参数
-// @namespace   https://github.com/s0urcelab/userscripts/blob/master/remove-bilibili-url-spam.user.js
+// @namespace   https://github.com/s0urcelab/userscripts
 // @match       https://www.bilibili.com/video/*
 // @match       https://live.bilibili.com/*
 // @grant       none
-// @version     1.2
+// @version     1.3
 // @author      s0urce
 // @description 移除Bilibili地址栏链接中的垃圾参数，如spm_id_from、from_sourse、from等
 // @icon        https://www.bilibili.com/favicon.ico

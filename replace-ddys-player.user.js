@@ -1,21 +1,24 @@
 // ==UserScript==
 // @name         替换ddys（低端影视）播放器
-// @namespace    https://github.com/s0urcelab/userscripts/blob/master/replace-ddys-player.user.js
-// @version      1.3
+// @namespace    https://github.com/s0urcelab/userscripts
+// @version      1.4
 // @description  替换ddys播放器，移除Adblock屏蔽，修复滚轮和全屏快捷键失效bug，优化选集和线路功能，自动记忆选集
 // @author       s0urce
+// @match        https://ddys.art/*
 // @match        https://ddys.pro/*
+// @icon         https://ddys.pro/favicon-16x16.png
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // @require      https://fastly.jsdelivr.net/npm/xgplayer@2.31.2/browser/index.min.js
 // @run-at       document-end
-// @icon         https://ddys.pro/favicon-16x16.png
-// @license      MIT
 // ==/UserScript==
-
-const $$ = (q) => document.querySelector(q)
-const $$$ = (q) => document.querySelectorAll(q)
-
+ 
+const QS = (q) => document.querySelector(q)
+const QSA = (q) => document.querySelectorAll(q)
+ 
+const domain = window.location.hostname
+const src4domain = `v.ddys.pro`
+ 
 const globalStyle = `
 .wp-playlist-tracks {
     display: none!important;
@@ -105,10 +108,11 @@ const globalStyle = `
 }
 `
 function parseResUrl(region, d) {
+    // type 4
+    if (d.srctype === '4') return { ...d, url: `https://${src4domain}${d.src3}` }
     // 海外线路
     if (region == 'overseas') return { ...d, url: `https://w.ddys.art${d.src0}?ddrkey=${d.src2}` }
-
-    const domain = window.location.hostname
+ 
     return new Promise((resolve, reject) => {
         GM_xmlhttpRequest({
             method: 'GET',
@@ -116,7 +120,7 @@ function parseResUrl(region, d) {
             headers: {
                 'referer': `https://${domain}/`
             },
-            url: `https://${domain}/getvddr/video?id=${d.src1}&dim=1080P&type=mix`,
+            url: `https://${domain}/getvddr2/video?id=${d.src1}&type=json`,
             onload: res => {
                 resolve({ ...d, url: res.response.url })
             },
@@ -126,7 +130,7 @@ function parseResUrl(region, d) {
         })
     })
 }
-
+ 
 class Tabs {
     constructor(init) {
         this.root = init.root
@@ -134,7 +138,7 @@ class Tabs {
         this.onSelect = init.onSelect
         this.selectedKey = init.data[0].key
     }
-
+ 
     render(key = this.selectedKey) {
         // update selectedKey
         this.selectedKey = key
@@ -167,7 +171,7 @@ class Switch {
         this.onSelect = init.onSwitch
         this.selectedKey = init.data[0].key
     }
-
+ 
     render(key = this.selectedKey) {
         // update selectedKey
         this.selectedKey = key
@@ -193,21 +197,21 @@ class Switch {
         }
     }
 }
-
+ 
 ; (async function () {
     'use strict';
-
-    const originContainer = $$('.wp-video-playlist')
+ 
+    const originContainer = QS('.wp-video-playlist')
     // cannot found Player, quit
     if (!originContainer) return;
-
+ 
     // inject global style
     GM_addStyle(globalStyle)
     // hide origin container
     for (const item of originContainer.children) {
         item.style.display = 'none'
     }
-
+ 
     // append container for xgplayer
     originContainer.innerHTML += `
     <div id="xgplayer"></div>
@@ -218,18 +222,18 @@ class Switch {
     </div>
     `
     // get video resource from page data
-    const res = JSON.parse($$('.wp-playlist-script').textContent)
+    const res = JSON.parse(QS('.wp-playlist-script').textContent)
     const resPromise = res.tracks
         .map((track, idx) => ({ ...track, key: `${idx + 1}`, label: track.caption }))
         .map(d => parseResUrl(window.localStorage['region'], d))
     const resGroups = await Promise.all(resPromise)
-
+ 
     // init xgplayer
     const initVolume = window.localStorage['volume'] ? parseFloat(window.localStorage['volume']) : 1
     const isWatched = window.localStorage[location.pathname]
     const initEp = isWatched ? JSON.parse(isWatched).ep : '1'
     const initPlayUrl = resGroups.find(v => v.key === initEp).url
-
+ 
     console.warn(`当前播放资源url：${initPlayUrl}`)
     const player = new window.Player({
         id: 'xgplayer',
@@ -240,10 +244,10 @@ class Switch {
         lastPlayTimeHideDelay: 3,
         ...isWatched && {lastPlayTime: JSON.parse(isWatched).seek},
     })
-
+ 
     // init switch
     const switchs = new Switch({
-        root: $$('.switch-root'),
+        root: QS('.switch-root'),
         data: [{ key: 'domestic', label: '国内线路' }, { key: 'overseas', label: '海外线路' }],
         onSwitch: (key, record) => {
             console.warn(`切换线路：${record.label}，即将刷新页面`)
@@ -254,7 +258,7 @@ class Switch {
     switchs.render(window.localStorage['region'])
     // init tabs
     const tabs = new Tabs({
-        root: $$('.tabs-root'),
+        root: QS('.tabs-root'),
         data: resGroups,
         onSelect: (key, record) => {
             console.warn(`切换选集：【${key}】${record.label}`)
@@ -265,7 +269,7 @@ class Switch {
     })
     // render tabs
     tabs.render(initEp)
-
+ 
     // update video progress
     player.on('timeupdate', function({ currentTime }) {
         window.localStorage[location.pathname] = JSON.stringify({
@@ -277,5 +281,5 @@ class Switch {
     player.on('volumechange', function({ volume }) {
         window.localStorage['volume'] = volume
     })
-
+ 
 })()
