@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         替换iwara播放器
+// @name         替换 iwara 播放器
 // @namespace    https://github.com/s0urcelab/userscripts
-// @version      1.0
+// @version      1.1
 // @description  修复iwara播放器加载源错误问题
 // @match        https://www.iwara.tv/video/*
 // @require      https://fastly.jsdelivr.net/npm/xgplayer@2.31.2/browser/index.min.js
