@@ -4,11 +4,12 @@
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_getValue
-// @require     https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.7.27/sweetalert2.min.js
+// @require     https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.7.27/sweetalert2.all.min.js
 // @match       https://kp.m-team.cc/detail/*
 // @match       https://kp.m-team.cc/browse/*
 // @version     1.0
 // @author      s0urce
+// @description 替换m-team（馒头PT）的列表下载按钮&种子详情页下载按钮，点击可直接跳转qBittorrent webui进行下载
 // @icon        https://kp.m-team.cc/favicon.ico
 // @license     MIT
 // ==/UserScript==
@@ -18,32 +19,33 @@ const QSA = q => document.querySelectorAll(q)
 
 function openSetting() {
     Swal.fire({
-        title: "输入qBit",
+        title: "设置qBit webui地址",
         input: "text",
         inputAttributes: {
-          autocapitalize: "off"
+            autocapitalize: "off"
         },
         showCancelButton: true,
-        confirmButtonText: "Look up",
+        confirmButtonText: "确认",
+        cancelButtonText: "取消",
         showLoaderOnConfirm: true,
-        preConfirm: async (text) => {
-          try {
-            console.log(1111, text)
-          } catch (error) {
-            Swal.showValidationMessage(`
-              Request failed
-            `);
-          }
+        preConfirm: async (url) => {
+            const isUrl = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
+            if (isUrl.test(url)) {
+                const user_url = new URL(url)
+                await GM_setValue('qbit_url', user_url.origin)
+            } else {
+                Swal.showValidationMessage('输入的url不合法！（需包含https/http）')
+            }
         },
         allowOutsideClick: () => !Swal.isLoading()
-      }).then((result) => {
+    }).then((result) => {
         if (result.isConfirmed) {
             Swal.fire({
-                title: "设置完成！",
+                title: '设置成功！',
                 icon: "success"
             });
         }
-      });
+    });
 }
 
 GM_registerMenuCommand("设置", openSetting);
@@ -57,8 +59,8 @@ async function getDLUrl(id) {
         body: formData,
         credentials: 'include'
     })
-    .then(response => response.json())
-    .catch(console.error)
+        .then(response => response.json())
+        .catch(console.error)
 
     if (code === "0") {
         return data
@@ -72,9 +74,19 @@ function resetDetailBtn(btn) {
     btn.onclick = async (e) => {
         e.preventDefault()
         e.stopPropagation()
+
+        const QBIT_URL = await GM_getValue('qbit_url')
+        if (!QBIT_URL) {
+            Swal.fire({
+                icon: "error",
+                title: "请先设置qBit webui地址！",
+            })
+            return;
+        }
+
         const id = window.location.pathname.match(/detail\/(\d+)[\/\?]?/)[1]
         const downloadLink = await getDLUrl(id)
-        window.open(`https://qbit.src.moe:8000/#download=${encodeURIComponent(downloadLink)}`, '_blank')
+        window.open(`${QBIT_URL}/#download=${encodeURIComponent(downloadLink)}`, '_blank')
         return;
     }
 }
@@ -83,8 +95,18 @@ function resetListBtn(btn, id) {
     btn.onclick = async (e) => {
         e.preventDefault()
         e.stopPropagation()
+
+        const QBIT_URL = await GM_getValue('qbit_url')
+        if (!QBIT_URL) {
+            Swal.fire({
+                icon: "error",
+                title: "请先设置qBit webui地址！",
+            })
+            return;
+        }
+
         const downloadLink = await getDLUrl(id)
-        window.open(`https://qbit.src.moe:8000/#download=${encodeURIComponent(downloadLink)}`, '_blank')
+        window.open(`${QBIT_URL}/#download=${encodeURIComponent(downloadLink)}`, '_blank')
         return;
     }
 }
@@ -110,7 +132,6 @@ const observer = new MutationObserver(async () => {
         const downloadBtn = Array.from(QSA('.ant-btn')).find(v => v.textContent === '下載')
         if (downloadBtn) {
             resetDetailBtn(downloadBtn)
-            // 销毁监视者
             observer.disconnect()
         }
     }
