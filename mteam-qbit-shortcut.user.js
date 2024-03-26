@@ -1,16 +1,16 @@
 // ==UserScript==
-// @name        馒头PT qBit快捷下载
-// @namespace   Violentmonkey Scripts
+// @name        m-team qBittorrent 快捷下载
+// @namespace   https://github.com/s0urcelab/userscripts/blob/master/mteam-qbit-shortcut.user.js
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @require     https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.7.27/sweetalert2.min.js
 // @match       https://kp.m-team.cc/detail/*
 // @match       https://kp.m-team.cc/browse/*
-// @grant       none
 // @version     1.0
 // @author      s0urce
-// @icon        https://www.google.com/s2/favicons?sz=64&domain=m-team.cc
+// @icon        https://kp.m-team.cc/favicon.ico
+// @license     MIT
 // ==/UserScript==
 
 const QS = q => document.querySelector(q)

@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        Hifini快捷下载（蓝奏云）
-// @namespace   Violentmonkey Scripts
+// @name        Hifini 快捷下载（蓝奏云）
+// @namespace   https://github.com/s0urcelab/userscripts/blob/master/hifini-quick-download.user.js
 // @match       https://www.hifini.com/thread-*.htm
 // @grant       GM_xmlhttpRequest
 // @grant       GM_notification

@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name         修复iwara
-// @namespace    https://github.com/s0urcelab/fix-iwara
-// @version      0.1
-// @description  修复iwara播放器问题
+// @name         替换iwara播放器
+// @namespace    https://github.com/s0urcelab/userscripts/blob/master/replace-iwara-player.user.js
+// @version      1.0
+// @description  修复iwara播放器加载源错误问题
 // @match        https://www.iwara.tv/video/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=iwara.tv
-// @author       s0urce
 // @require      https://fastly.jsdelivr.net/npm/xgplayer@2.31.2/browser/index.min.js
+// @icon         https://www.iwara.tv/logo.png
+// @author       s0urce
+// @license      MIT
 // ==/UserScript==
 
 ; (function () {

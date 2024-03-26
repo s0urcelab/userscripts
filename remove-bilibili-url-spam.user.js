@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        移除 Bilibili 链接垃圾参数
-// @namespace   Violentmonkey Scripts
+// @namespace   https://github.com/s0urcelab/userscripts/blob/master/remove-bilibili-url-spam.user.js
 // @match       https://www.bilibili.com/video/*
 // @match       https://live.bilibili.com/*
 // @grant       none

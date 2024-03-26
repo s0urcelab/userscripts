@@ -1,3 +1,18 @@
+// ==UserScript==
+// @name         替换ddys（低端影视）播放器
+// @namespace    https://github.com/s0urcelab/userscripts/blob/master/replace-ddys-player.user.js
+// @version      1.3
+// @description  替换ddys播放器，移除Adblock屏蔽，修复滚轮和全屏快捷键失效bug，优化选集和线路功能，自动记忆选集
+// @author       s0urce
+// @match        https://ddys.pro/*
+// @grant        GM_addStyle
+// @grant        GM_xmlhttpRequest
+// @require      https://fastly.jsdelivr.net/npm/xgplayer@2.31.2/browser/index.min.js
+// @run-at       document-end
+// @icon         https://ddys.pro/favicon-16x16.png
+// @license      MIT
+// ==/UserScript==
+
 const $$ = (q) => document.querySelector(q)
 const $$$ = (q) => document.querySelectorAll(q)
 
