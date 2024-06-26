@@ -7,7 +7,9 @@
 // @require     https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.7.27/sweetalert2.all.min.js
 // @match       https://kp.m-team.cc/detail/*
 // @match       https://kp.m-team.cc/browse/*
-// @version     1.2
+// @match       https://zp.m-team.io/detail/*
+// @match       https://zp.m-team.io/browse/*
+// @version     1.3
 // @author      s0urce
 // @description 替换m-team（馒头PT）的列表下载按钮&种子详情页下载按钮，点击可直接跳转qBittorrent webui进行下载
 // @icon        https://kp.m-team.cc/favicon.ico
