@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         替换ddys（低端影视）播放器
 // @namespace    https://github.com/s0urcelab/userscripts
-// @version      1.4
+// @version      1.5
 // @description  替换ddys播放器，移除Adblock屏蔽，修复滚轮和全屏快捷键失效bug，优化选集和线路功能，自动记忆选集
 // @author       s0urce
 // @match        https://ddys.art/*
@@ -63,74 +63,10 @@ const globalStyle = `
     font-size: 14px;
     margin-right: 5px;
 }
-.switch-root {
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    background: #e0e0e0;
-    border-radius: 26px;
-    width: 174px;
-    padding: 2px;
-}
-.sw-group {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 2px;
-    width: 170px;
-    display: flex;
-    justify-content: space-between;
-}
-.sw-item {
-    line-height: 30px;
-    padding: 0 10px;
-    color: #666;
-}
-.sw-item.active {
-    font-weight: bold;
-    color: #333;
-}
-.switch-root > .indicator {
-    transition: all 0.2s ease;
-    margin-left: 0;
-    width: 86px;
-    height: 30px;
-    background: #fff;
-    border-radius: 26px;
-    box-shadow: 0px 0px 6px -2px #111;
-}
-.switch-root > .indicator.overseas {
-    margin-left: 84px;
-}
-.ep-tip {
-    margin: 10px 0;
-    color: white;
-}
 `
-function parseResUrl(region, d) {
-    // type 4
-    if (d.srctype === '4') return { ...d, url: `https://${src4domain}${d.src3}` }
-    // 海外线路
-    if (region == 'overseas') return { ...d, url: `https://w.ddys.art${d.src0}?ddrkey=${d.src2}` }
- 
-    return new Promise((resolve, reject) => {
-        GM_xmlhttpRequest({
-            method: 'GET',
-            responseType: 'json',
-            headers: {
-                'referer': `https://${domain}/`
-            },
-            url: `https://${domain}/getvddr2/video?id=${d.src1}&type=json`,
-            onload: res => {
-                resolve({ ...d, url: res.response.url })
-            },
-            onerror: function (error) {
-                reject(error)
-            },
-        })
-    })
+function parseResUrl(d) {
+    return { ...d, url: `https://${src4domain}${d[`src${d.srctype - 1}`]}` }
 }
- 
 class Tabs {
     constructor(init) {
         this.root = init.root
@@ -164,39 +100,6 @@ class Tabs {
         }
     }
 }
-class Switch {
-    constructor(init) {
-        this.root = init.root
-        this.data = init.data
-        this.onSelect = init.onSwitch
-        this.selectedKey = init.data[0].key
-    }
- 
-    render(key = this.selectedKey) {
-        // update selectedKey
-        this.selectedKey = key
-        // render dom
-        const group = this.data.reduce((acc, curr) => {
-            const isTarget = key === curr.key
-            return `${acc}
-                <div class="sw-item ${isTarget ? 'active' : ''}" data-sw-key="${curr.key}">
-                ${curr.label}
-            </div>
-            `
-        }, '')
-        this.root.innerHTML = `<div class="indicator ${key}"></div><div class="sw-group">${group}</div>`
-        // bind click
-        const self = this
-        for (const swElment of this.root.querySelector('.sw-group').children) {
-            swElment.onclick = function() {
-                const swKey = swElment.dataset.swKey
-                const record = self.data.find(v => v.key === swKey)
-                self.render(swKey)
-                self.onSelect(swKey, record)
-            }
-        }
-    }
-}
  
 ; (async function () {
     'use strict';
@@ -216,8 +119,6 @@ class Switch {
     originContainer.innerHTML += `
     <div id="xgplayer"></div>
     <div class="player-sider">
-    <div class="switch-root"></div>
-    <p class="ep-tip">选集：</p>
     <div class="tabs-root"></div>
     </div>
     `
@@ -225,7 +126,7 @@ class Switch {
     const res = JSON.parse(QS('.wp-playlist-script').textContent)
     const resPromise = res.tracks
         .map((track, idx) => ({ ...track, key: `${idx + 1}`, label: track.caption }))
-        .map(d => parseResUrl(window.localStorage['region'], d))
+        .map(parseResUrl)
     const resGroups = await Promise.all(resPromise)
  
     // init xgplayer
@@ -245,17 +146,6 @@ class Switch {
         ...isWatched && {lastPlayTime: JSON.parse(isWatched).seek},
     })
  
-    // init switch
-    const switchs = new Switch({
-        root: QS('.switch-root'),
-        data: [{ key: 'domestic', label: '国内线路' }, { key: 'overseas', label: '海外线路' }],
-        onSwitch: (key, record) => {
-            console.warn(`切换线路：${record.label}，即将刷新页面`)
-            window.localStorage['region'] = key
-            window.location.reload()
-        }
-    })
-    switchs.render(window.localStorage['region'])
     // init tabs
     const tabs = new Tabs({
         root: QS('.tabs-root'),
