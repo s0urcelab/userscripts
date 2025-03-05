@@ -9,7 +9,7 @@
 // @match       https://kp.m-team.cc/browse/*
 // @match       https://zp.m-team.io/detail/*
 // @match       https://zp.m-team.io/browse/*
-// @version     1.3
+// @version     1.4
 // @author      s0urce
 // @description 替换m-team（馒头PT）的列表下载按钮&种子详情页下载按钮，点击可直接跳转qBittorrent webui进行下载
 // @icon        https://kp.m-team.cc/favicon.ico
@@ -21,12 +21,13 @@ const QSA = q => document.querySelectorAll(q)
 
 function openSetting() {
     Swal.fire({
-        title: "设置qBit webui地址",
+        title: "qBittorrent WebUI 设置",
         input: "text",
         inputAttributes: {
             autocapitalize: "off"
         },
         showCancelButton: true,
+        inputPlaceholder: GM_getValue('qbit_url', 'http://localhost:8080'),
         confirmButtonText: "确认",
         cancelButtonText: "取消",
         showLoaderOnConfirm: true,
@@ -40,7 +41,8 @@ function openSetting() {
             }
         },
         allowOutsideClick: () => !Swal.isLoading()
-    }).then((result) => {
+    })
+    .then((result) => {
         if (result.isConfirmed) {
             Swal.fire({
                 title: '设置成功！',
@@ -60,7 +62,10 @@ async function getDLUrl(id) {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: localStorage.getItem('auth'),
+          authorization: localStorage.getItem('auth'),
+          did: localStorage.getItem('did'),
+          ts: Math.floor((new Date()).getTime()/1000),
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',
         },
     })
         .then(response => response.json())
