@@ -4,7 +4,7 @@
 // @match       https://www.hifini.com/thread-*.htm
 // @grant       GM_xmlhttpRequest
 // @grant       GM_notification
-// @version     1.3
+// @version     1.4
 // @author      s0urce
 // @description 一键回复/下载，无需填写提取码快速下载
 // @icon        https://www.hifini.com/view/img/logo.png
@@ -119,12 +119,13 @@ async function getLanZouAddr() {
             'user-agent': UA,
         },
     })
-    // 解析html中的签名
-    const sign = lzText.match(/skdklds(\s+)=(\s+)'(.+)'/)[3]
+    // 解析html中的参数
+    const fileId = lzText.match(/ajaxm\.php\?file=(\d+)'/)[1]
+    const sign = lzText.match(/bcdf(\s+)=(\s+)'(.+)'/)[3]
     console.warn(`解析sign：${sign}`)
  
     const { dom, url } = await asRequest({
-        url: `https://hifini.lanzoum.com/ajaxm.php`,
+        url: `https://hifini.lanzoum.com/ajaxm.php?file=${fileId}`,
         method: 'POST',
         headers: {
             Host: 'hifini.lanzoum.com',
@@ -135,8 +136,9 @@ async function getLanZouAddr() {
         },
         data: new URLSearchParams({
             action: 'downprocess',
-            sign,
             p: pass,
+            sign,
+            kd: 1,
         }),
         responseType: 'json',
     })
