@@ -4,7 +4,7 @@
 // @match       https://www.hifini.com/thread-*.htm
 // @grant       GM_xmlhttpRequest
 // @grant       GM_notification
-// @version     1.5
+// @version     1.6
 // @author      s0urce
 // @description 一键回复/下载，无需填写提取码快速下载
 // @icon        https://www.hifini.com/view/img/logo.png
@@ -90,7 +90,7 @@ async function getLanZouAddr() {
     let pass
     QSA(DL_LINKS).forEach(dl => {
         const dlText = dl.innerText
-        if (dlText.includes('hifini')) {
+        if (/lanz([^\.]+)\.com/.test(dlText)) {
             const ln_re = dlText.match(/链接:\s*(\S+)\s*提取码:\s*(\S*)/)
             link = ln_re[1]
             pass = ln_re[2]
