@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         替换ddys（低端影视）播放器
 // @namespace    https://github.com/s0urcelab/userscripts
-// @version      1.5
+// @version      1.6
 // @description  替换ddys播放器，移除Adblock屏蔽，修复滚轮和全屏快捷键失效bug，优化选集和线路功能，自动记忆选集
 // @author       s0urce
 // @match        https://ddys.art/*
@@ -12,13 +12,13 @@
 // @require      https://fastly.jsdelivr.net/npm/xgplayer@2.31.2/browser/index.min.js
 // @run-at       document-end
 // ==/UserScript==
- 
+
 const QS = (q) => document.querySelector(q)
 const QSA = (q) => document.querySelectorAll(q)
- 
+
 const domain = window.location.hostname
 const src4domain = `v.ddys.pro`
- 
+
 const globalStyle = `
 .wp-playlist-tracks {
     display: none!important;
@@ -74,7 +74,7 @@ class Tabs {
         this.onSelect = init.onSelect
         this.selectedKey = init.data[0].key
     }
- 
+
     render(key = this.selectedKey) {
         // update selectedKey
         this.selectedKey = key
@@ -91,7 +91,7 @@ class Tabs {
         // bind click
         const self = this
         for (const tabElment of this.root.children) {
-            tabElment.onclick = function() {
+            tabElment.onclick = function () {
                 const tabKey = tabElment.dataset.tabKey
                 const record = self.data.find(v => v.key === tabKey)
                 self.render(tabKey)
@@ -100,21 +100,21 @@ class Tabs {
         }
     }
 }
- 
+
 ; (async function () {
     'use strict';
- 
+
     const originContainer = QS('.wp-video-playlist')
     // cannot found Player, quit
     if (!originContainer) return;
- 
+
     // inject global style
     GM_addStyle(globalStyle)
     // hide origin container
     for (const item of originContainer.children) {
         item.style.display = 'none'
     }
- 
+
     // append container for xgplayer
     originContainer.innerHTML += `
     <div id="xgplayer"></div>
@@ -128,13 +128,13 @@ class Tabs {
         .map((track, idx) => ({ ...track, key: `${idx + 1}`, label: track.caption }))
         .map(parseResUrl)
     const resGroups = await Promise.all(resPromise)
- 
+
     // init xgplayer
     const initVolume = window.localStorage['volume'] ? parseFloat(window.localStorage['volume']) : 1
     const isWatched = window.localStorage[location.pathname]
     const initEp = isWatched ? JSON.parse(isWatched).ep : '1'
     const initPlayUrl = resGroups.find(v => v.key === initEp).url
- 
+
     console.warn(`当前播放资源url：${initPlayUrl}`)
     const player = new window.Player({
         id: 'xgplayer',
@@ -143,9 +143,13 @@ class Tabs {
         fluid: true,
         videoInit: true,
         lastPlayTimeHideDelay: 3,
-        ...isWatched && {lastPlayTime: JSON.parse(isWatched).seek},
+        keyShortcut: 'on',
+        keyShortcutStep: {
+            currentTime: 10, //播放进度调整步长，默认10秒
+        },
+        ...isWatched && { lastPlayTime: JSON.parse(isWatched).seek },
     })
- 
+
     // init tabs
     const tabs = new Tabs({
         root: QS('.tabs-root'),
@@ -159,17 +163,17 @@ class Tabs {
     })
     // render tabs
     tabs.render(initEp)
- 
+
     // update video progress
-    player.on('timeupdate', function({ currentTime }) {
+    player.on('timeupdate', function ({ currentTime }) {
         window.localStorage[location.pathname] = JSON.stringify({
             seek: currentTime,
             ep: tabs.selectedKey,
         })
     })
     // update volume
-    player.on('volumechange', function({ volume }) {
+    player.on('volumechange', function ({ volume }) {
         window.localStorage['volume'] = volume
     })
- 
+
 })()
