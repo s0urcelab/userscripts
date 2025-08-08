@@ -7,7 +7,9 @@
 // @require     https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.7.27/sweetalert2.all.min.js
 // @match       https://kp.m-team.cc/detail/*
 // @match       https://zp.m-team.io/detail/*
-// @version     1.5
+// @match       https://next.m-team.cc/detail/*
+// @match       https://ob.m-team.cc/detail/*
+// @version     1.6
 // @author      s0urce
 // @description 替换m-team（馒头PT）的列表下载按钮&种子详情页下载按钮，点击可直接跳转qBittorrent webui进行下载
 // @icon        https://kp.m-team.cc/favicon.ico
@@ -16,17 +18,6 @@
 
 const QS = q => document.querySelector(q)
 const QSA = q => document.querySelectorAll(q)
-
-async function readClipboard() {
-    return new Promise((resolve, reject) => {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            navigator.clipboard.readText()
-                .then(text => resolve(text))
-                .catch(err => reject(err))
-        }
-    })
-
-}
 
 function openSetting() {
     Swal.fire({
@@ -79,12 +70,21 @@ function resetDetailBtn(btn) {
             return;
         }
 
-        const copyBtn = Array.from(QSA('.ant-btn')).find(v => v.textContent === '[複製鏈接]')
-        copyBtn.click()
-        window.setTimeout(async () => {
-            const downloadLink = await readClipboard()
-            window.open(`${QBIT_URL}/#download=${encodeURIComponent(downloadLink)}`, '_blank')
-        }, 700)
+        const data = await fetch(`${localStorage.getItem('apiHost')}/torrent/genDlToken`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "TS": Math.floor(Date.now() / 1000),
+                "Authorization": localStorage.getItem("auth") || ""
+            },
+            body: `id=${location.pathname.split('detail/')[1]}`
+        }).then(response => response.json())
+
+        if (data.code !== '0') {
+            console.error(`获取种子下载地址失败: ${data}`);
+        }
+        
+        window.open(`${QBIT_URL}/#download=${encodeURIComponent(data.data)}`, '_blank')
         return;
     }
 }
